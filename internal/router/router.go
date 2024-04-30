@@ -10,13 +10,15 @@ import (
 	"strings"
 	"time"
 
+	_ "github.com/basedalex/effective-mobile-test/docs"
 	"github.com/basedalex/effective-mobile-test/internal/api"
 	"github.com/basedalex/effective-mobile-test/internal/config"
 	"github.com/basedalex/effective-mobile-test/internal/db"
 	"github.com/basedalex/effective-mobile-test/internal/types"
 	"github.com/go-chi/chi/v5"
-
+	"github.com/go-chi/cors"
 	log "github.com/sirupsen/logrus"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type HTTPResponse struct {
@@ -70,6 +72,19 @@ func newRouter(service carService, apiClient api.Client) *chi.Mux {
 
 	r := chi.NewRouter()
 
+	r.Use(cors.Handler(cors.Options{
+		AllowedOrigins: []string{"https://*", "http://*"},
+		AllowedMethods: []string{"GET", "POST", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders: []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders: []string{"Link"},
+		AllowCredentials: true,
+		MaxAge: 300,
+	}))
+
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8181/swagger/doc.json"),
+	))
+
 	r.Post("/api/v1/car", handler.createCar)
 	r.Get("/api/v1/car", handler.getCar)
 	r.Patch("/api/v1/car/{id}", handler.updateCar)
@@ -92,6 +107,18 @@ type updatePayload struct {
 	Patronymic string `json:"patronymic"`
 }
 
+// @Summary CreateCar
+// @Tags car
+// @Description create car
+// @ID create-car
+// @Accept json
+// @Produce json
+// @Param request body payload true "regnum array to create cars in car catalogue API"
+// @Success 201 {integer} integer 1
+// @Failure 400 {object} HTTPResponse 
+// @Failure 500 {object} HTTPResponse
+// @Failure default {object} HTTPResponse
+// @Router /api/v1/car [post]
 func (h *Handler) createCar(w http.ResponseWriter, r *http.Request) {
 	var cars payload
 
@@ -174,6 +201,17 @@ func getQuery(r *http.Request) types.GetCarQuery {
 	}
 }
 
+// @Summary GetCar
+// @Tags car
+// @Description get car
+// @ID get-car
+// @Accept json
+// @Produce json
+// @Param q query string false "search options"
+// @Success 200 {intgeger} HTTPResponse
+// @Failure 500 {object} HTTPResponse
+// @Failure default {object} HTTPResponse
+// @Router /api/v1/car [get]
 func (h *Handler) getCar(w http.ResponseWriter, r *http.Request) {
 	payload := getQuery(r)
 
@@ -186,6 +224,19 @@ func (h *Handler) getCar(w http.ResponseWriter, r *http.Request) {
 	writeOkResponse(w, http.StatusOK, data)
 }
 
+// @Summary UpdateCar
+// @Tags car
+// @Description update car
+// @ID update-car
+// @Accept json
+// @Produce json
+// @Param id path int true "Car ID"
+// @Param request body updatePayload false "update options"
+// @Success 200 {integer} HTTPResponse
+// @Failure 400 {object} HTTPResponse
+// @Failure 500 {object} HTTPResponse
+// @Failure default {object} HTTPResponse
+// @Router /api/v1/car/{id} [patch]
 func (h *Handler) updateCar(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
@@ -224,6 +275,17 @@ func (h *Handler) updateCar(w http.ResponseWriter, r *http.Request) {
 	writeOkResponse(w, http.StatusOK, updatedCar)
 }
 
+// @Summary DeleteCar
+// @Tags car
+// @Description delete car
+// @ID delete-car
+// @Accept json
+// @Produce json
+// @Param id path int true "Car ID"
+// @Success 204 {integer} HTTPResponse
+// @Failure 500 {object} HTTPResponse
+// @Failure default {object} HTTPResponse
+// @Router /api/v1/car/{id} [delete]
 func (h *Handler) deleteCar(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
@@ -247,7 +309,7 @@ func writeOkResponse(w http.ResponseWriter, statusCode int, data any) {
 	if data != nil {
 		err := json.NewEncoder(w).Encode(HTTPResponse{Data: data})
 		if err != nil {
-			log.Warn(err)
+			log.Error(err)
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	}
@@ -256,10 +318,10 @@ func writeOkResponse(w http.ResponseWriter, statusCode int, data any) {
 func writeErrResponse(w http.ResponseWriter, statusCode int, err error) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	log.Warn(err)
+	log.Error(err)
 
 	jsonErr := json.NewEncoder(w).Encode(HTTPResponse{Error: err.Error()})
 	if jsonErr != nil {
-		log.Warn(jsonErr)
+		log.Error(jsonErr)
 	}
 }

@@ -1,0 +1,171 @@
+basePath: /
+definitions:
+  router.HTTPResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+    type: object
+  router.payload:
+    properties:
+      regNums:
+        items:
+          type: string
+        type: array
+    type: object
+  router.updatePayload:
+    properties:
+      mark:
+        type: string
+      model:
+        type: string
+      name:
+        type: string
+      patronymic:
+        type: string
+      regNum:
+        type: string
+      surname:
+        type: string
+      year:
+        type: integer
+    type: object
+host: localhost:8181
+info:
+  contact: {}
+  description: This is a car catalogue server.
+  title: Car Catalogue API
+  version: "1.0"
+paths:
+  /api/v1/car:
+    get:
+      consumes:
+      - application/json
+      description: get car
+      operationId: get-car
+      parameters:
+      - description: search options
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: intgeger
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/router.HTTPResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/router.HTTPResponse'
+      summary: GetCar
+      tags:
+      - car
+    post:
+      consumes:
+      - application/json
+      description: create car
+      operationId: create-car
+      parameters:
+      - description: regnum array to create cars in car catalogue API
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/router.payload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.HTTPResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/router.HTTPResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/router.HTTPResponse'
+      summary: CreateCar
+      tags:
+      - car
+  /api/v1/car/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete car
+      operationId: delete-car
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            type: integer
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/router.HTTPResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/router.HTTPResponse'
+      summary: DeleteCar
+      tags:
+      - car
+    patch:
+      consumes:
+      - application/json
+      description: update car
+      operationId: update-car
+      parameters:
+      - description: Car ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: update options
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/router.updatePayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/router.HTTPResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/router.HTTPResponse'
+        default:
+          description: ""
+          schema:
+            $ref: '#/definitions/router.HTTPResponse'
+      summary: UpdateCar
+      tags:
+      - car
+swagger: "2.0"
