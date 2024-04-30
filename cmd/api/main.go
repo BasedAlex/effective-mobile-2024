@@ -8,6 +8,7 @@ import (
 	"github.com/basedalex/effective-mobile-test/internal/api"
 	"github.com/basedalex/effective-mobile-test/internal/config"
 	"github.com/basedalex/effective-mobile-test/internal/db"
+	"github.com/basedalex/effective-mobile-test/internal/logger"
 	"github.com/basedalex/effective-mobile-test/internal/router"
 	log "github.com/sirupsen/logrus"
 )
@@ -24,6 +25,8 @@ func main() {
 	defer cancel()
 
 	cfg := config.New()
+
+	logger.New(cfg.Env.LogLevel)
 
 	database, err := db.NewPostgres(ctx, cfg.Env.PGDSN)
 	if err != nil {
