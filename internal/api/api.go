@@ -62,7 +62,7 @@ func (c *Client) GetInfo(ctx context.Context, regNum string) (Car, error) {
 	if err != nil {
 		return Car{},fmt.Errorf("json decode: %w", err)
 	}
-
+	// log which car we got from API
 	log.Info(car)
 
 	return car, nil

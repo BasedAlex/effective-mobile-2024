@@ -12,6 +12,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// @title           Car Catalogue API
+// @version         1.0
+// @description     This is a car catalogue server.
+
+// @host localhost:8181
+// @BasePath /
+
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer cancel()
@@ -31,6 +38,5 @@ func main() {
 	if err != nil {
 		log.Panic(err)
 	}
-	
 	
 }
