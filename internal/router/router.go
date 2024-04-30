@@ -120,6 +120,7 @@ type updatePayload struct {
 // @Failure default {object} HTTPResponse
 // @Router /api/v1/car [post]
 func (h *Handler) createCar(w http.ResponseWriter, r *http.Request) {
+	log.Debugf("Addr: %s, Method: %s, URL: %s", r.Host, r.Method, r.URL)
 	var cars payload
 
 	err := json.NewDecoder(r.Body).Decode(&cars)
@@ -160,6 +161,7 @@ func (h *Handler) createCar(w http.ResponseWriter, r *http.Request) {
 		counter++
 	}
 
+	log.Debug(w)
 	if counter > 0 {
 		writeOkResponse(w, http.StatusCreated, nil)
 	} else {
@@ -171,7 +173,7 @@ func getQuery(r *http.Request) types.GetCarQuery {
 	yearStr := r.URL.Query().Get("year")
 	year, err := strconv.Atoi(yearStr)
 	if err != nil {
-		log.Warn(err)
+		log.Debug(err)
 		year = 0
 	}
 	limitStr := r.URL.Query().Get("limit")
@@ -179,12 +181,12 @@ func getQuery(r *http.Request) types.GetCarQuery {
 
 	limit, err := strconv.Atoi(limitStr)
 	if err != nil {
-		log.Warn(err)
+		log.Debug(err)
 		limit = 0
 	}
 	offset, err := strconv.Atoi(offsetStr)
 	if err != nil {
-		log.Warn(err)
+		log.Debug(err)
 		offset = 0
 	}
 
@@ -213,6 +215,7 @@ func getQuery(r *http.Request) types.GetCarQuery {
 // @Failure default {object} HTTPResponse
 // @Router /api/v1/car [get]
 func (h *Handler) getCar(w http.ResponseWriter, r *http.Request) {
+	log.Debugf("Addr: %s, Method: %s, URL: %s", r.Host, r.Method, r.URL)
 	payload := getQuery(r)
 
 	data, err := h.service.GetCar(r.Context(), &payload)
@@ -238,12 +241,14 @@ func (h *Handler) getCar(w http.ResponseWriter, r *http.Request) {
 // @Failure default {object} HTTPResponse
 // @Router /api/v1/car/{id} [patch]
 func (h *Handler) updateCar(w http.ResponseWriter, r *http.Request) {
+	log.Debugf("Addr: %s, Method: %s, URL: %s", r.Host, r.Method, r.URL)
+
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		writeErrResponse(w, http.StatusBadRequest, err)
 		return
 	}
-
+	
 	var payload updatePayload
 
 	err = json.NewDecoder(r.Body).Decode(&payload)
@@ -271,7 +276,7 @@ func (h *Handler) updateCar(w http.ResponseWriter, r *http.Request) {
 		writeErrResponse(w, http.StatusInternalServerError, err)
 		return
 	}
-
+	
 	writeOkResponse(w, http.StatusOK, updatedCar)
 }
 
@@ -287,6 +292,7 @@ func (h *Handler) updateCar(w http.ResponseWriter, r *http.Request) {
 // @Failure default {object} HTTPResponse
 // @Router /api/v1/car/{id} [delete]
 func (h *Handler) deleteCar(w http.ResponseWriter, r *http.Request) {
+	log.Debugf("Addr: %s, Method: %s, URL: %s", r.Host, r.Method, r.URL)
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		writeErrResponse(w, http.StatusBadRequest, err)
@@ -306,6 +312,7 @@ func writeOkResponse(w http.ResponseWriter, statusCode int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
+	log.Infof("successful request with statusCode %d and data type %T", statusCode, data)
 	if data != nil {
 		err := json.NewEncoder(w).Encode(HTTPResponse{Data: data})
 		if err != nil {

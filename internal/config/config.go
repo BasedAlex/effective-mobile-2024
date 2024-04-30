@@ -15,6 +15,7 @@ type EnvSetting struct {
 	Port     string `env:"PORT"`
 	APIHost  string	`env:"API_HOST"`
 	APIPort  string `env:"API_PORT"` 
+	LogLevel string `env:"LOG_LEVEL"`
 }
 
 func New() *Config {
